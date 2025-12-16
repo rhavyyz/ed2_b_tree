@@ -44,18 +44,19 @@ A seguir os metodos de compilação que usamos:
 - Via `GNU G++`
 ```bash  
 $ g++ -std=c++20 -o b b.cpp 
+$ ./b
 ```
 
 - Via cmake
-```
-mkdir build
-cd build
+```bash
+$ mkdir build
+$ cd build
 
-cmake ..
+$ cmake ..
 
-make
+$ make
 
-./b
+$ ./b
 ```
 
 Mas qualquer compilador de c++ 20 deve ser capaz de gerar um executavel valido.
