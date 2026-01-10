@@ -125,6 +125,18 @@ class HeapPriorityQueue {
             cout << std::endl;
         }
 
+        bool promote(int old_priority, int new_priority) {
+            for(int i = 0; i < next_inclusion; i++) {
+                if(data[i].first == old_priority) {
+                    data[i].first = new_priority;
+
+                    swap_up(i);
+                    swap_down(i);
+                }
+            }
+
+            return false;
+        }
 
 };
 
