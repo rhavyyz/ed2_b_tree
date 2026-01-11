@@ -1,5 +1,6 @@
 #include<iostream>
 #include<vector>
+#include<functional>
 
 using std::cout, std::pair, std::vector;
 
@@ -7,6 +8,8 @@ using std::cout, std::pair, std::vector;
 template<class T, size_t d, size_t max_size>
 class HeapPriorityQueue {
     private:
+        std::function<bool(int, int)> priority_function;
+
         pair<int, T> data[max_size];
         int next_inclusion = 0;
 
@@ -21,17 +24,17 @@ class HeapPriorityQueue {
             return pos;
         }
 
-        int get_smallest_child_of(int pos) {
-            int smallest_child = -1, smallest_value;
+        int get_best_child_of(int pos) {
+            int best_child = -1, best_value;
 
             int child = -1, i = 0;
             while((child = get_child(pos, i++))!= -1) {
-                if(smallest_child == -1 ||data[child].first  < smallest_value) {
-                    smallest_child = child;
-                    smallest_value = data[child].first;
+                if(best_child == -1 || priority_function(data[child].first, best_value)) {
+                    best_child = child;
+                    best_value = data[child].first;
                 } 
             }
-            return smallest_child;
+            return best_child;
         }
 
         int parent_of(int index) {
@@ -42,19 +45,19 @@ class HeapPriorityQueue {
         void swap_up(int pos) {
             if(pos == 0 ) return;
             int parent = this->parent_of(pos);
-            if(this->data[pos].first < this->data[parent].first) {
+            if(priority_function(this->data[pos].first, this->data[parent].first)) {
                 std::swap(data[pos], data[parent]);
                 swap_up(parent);
             }
         }
 
         void swap_down(int pos) {
-            int child = get_smallest_child_of(pos);
+            int child = get_best_child_of(pos);
 
             if(child == -1)
                 return;
 
-            if(data[child].first < data[pos].first) {
+            if(priority_function(data[child].first, data[pos].first)) {
                 std::swap(data[pos], data[child]);
                 swap_down(child);
             }
@@ -138,6 +141,22 @@ class HeapPriorityQueue {
             return false;
         }
 
+        bool promote_with_delta(int priority, int delta) {
+            for(int i = 0; i < next_inclusion; i++) {
+                if(data[i].first == priority) {
+                    data[i].first += delta;
+
+                    swap_up(i);
+                    swap_down(i);
+                }
+            }
+
+            return false;
+        }
+        
+        HeapPriorityQueue(std::function<bool(int, int)> priority_function = [](int a, int b) {return a < b;}) {
+            this->priority_function = priority_function;
+        }
 };
 
 void q1() {
@@ -153,7 +172,7 @@ void q3() {
     vector<pair<int, int>> items = {{18,39}, {41,17}, {8,57}, {32, 3}, {27,14}, {19,22}, {17,18}, {7,14}, {11,57}, {72,16}, {31,16}, {2,14}, {21,41},
     {12,7}, {9, 1}, {3, 51}, {41,11}, {18,6}};
 
-    HeapPriorityQueue<int, 4, 50> queue;
+    HeapPriorityQueue<int, 4, 50> queue([](int a, int b){return a > b;});
 
     for(auto [item, priority] : items) {
 
@@ -162,14 +181,29 @@ void q3() {
         queue.print();
     }
 
-    
     while(queue.size()) {
         cout << "\n\nremovendo " << queue.top().second << " , " << queue.top().second << std::endl;
         queue.pop();
         queue.print();
     }
 
+    for(auto [item, priority] : items) {
+        queue.insert({priority, item});
+        queue.print();
+    }
 
+    vector<pair<int, int>> promotions = {{11,57}, {17, 18}, {9,1}};
+
+    for(auto [value, priority] : promotions) {
+        auto [best_p, value] = queue.top();
+
+        if (!queue.promote(priority, best_p + 1))
+            continue;
+        
+        cout << "promovendo " << priority << " para " << best_p + 1 << std::endl;
+        queue.print();
+        cout << std::endl << std::endl;
+    }
 
 }
 
